@@ -10,6 +10,7 @@ interface AppShellProps {
   children: React.ReactNode;
   title?: string;
   actions?: React.ReactNode;
+  leftContent?: React.ReactNode;
   hideBreadcrumbs?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function AppShell({
   children,
   title,
   actions,
+  leftContent,
   hideBreadcrumbs = false,
 }: AppShellProps) {
   const initialize = useAppStore((state) => state.initialize);
@@ -33,7 +35,7 @@ export function AppShell({
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Bar */}
-        <TopBar title={title} actions={actions} />
+        <TopBar title={title} actions={actions} leftContent={leftContent} />
 
         {/* Breadcrumbs */}
         {!hideBreadcrumbs && <Breadcrumbs />}

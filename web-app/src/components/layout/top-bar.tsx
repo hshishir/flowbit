@@ -13,13 +13,15 @@ import {
 interface TopBarProps {
   title?: string;
   actions?: React.ReactNode;
+  leftContent?: React.ReactNode;
 }
 
-export function TopBar({ title, actions }: TopBarProps) {
+export function TopBar({ title, actions, leftContent }: TopBarProps) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-background px-6">
       {/* Left side - Title or Search */}
       <div className="flex items-center gap-4">
+        {leftContent}
         {title ? (
           <h1 className="text-lg font-semibold text-foreground">{title}</h1>
         ) : (

@@ -108,7 +108,7 @@ export function FlowStrip() {
         </motion.p>
 
         <motion.div
-          className="flex items-center justify-center overflow-x-auto pb-4 scrollbar-thin"
+          className="flex items-center justify-center overflow-x-auto pt-4 pb-4 scrollbar-thin"
           variants={reducedMotion ? {} : containerVariants}
           initial="hidden"
           animate="visible"
@@ -210,21 +210,6 @@ export function FlowStrip() {
                       {step.label}
                     </motion.span>
 
-                    {/* Description tooltip on hover - positioned above */}
-                    <AnimatePresence>
-                      {isHovered && !reducedMotion && (
-                        <motion.div
-                          className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 px-3 py-2 bg-foreground text-background text-xs rounded-lg shadow-xl whitespace-nowrap z-50 pointer-events-none"
-                          initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          {step.description}
-                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-foreground rotate-45" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </motion.div>
 
                   {/* Animated Chevron Connector */}
