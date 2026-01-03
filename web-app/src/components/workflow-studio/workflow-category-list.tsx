@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -17,17 +18,28 @@ import {
   Settings,
   DollarSign,
   Megaphone,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NewWorkflowDialog } from "@/components/workflow-studio/new-workflow-dialog";
 import { useAppStore } from "@/stores/app-store";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Workflow as WorkflowType } from "@/mocks/types";
 
@@ -35,6 +47,7 @@ interface WorkflowCategoryListProps {
   departmentId: string;
   onBack: () => void;
   onSelectWorkflow: (workflowId: string) => void;
+  onCreateWorkflow: (departmentId: string, name: string, description: string) => void;
 }
 
 const departmentConfig: Record<
@@ -102,11 +115,38 @@ export function WorkflowCategoryList({
   departmentId,
   onBack,
   onSelectWorkflow,
+  onCreateWorkflow,
 }: WorkflowCategoryListProps) {
   const reducedMotion = useReducedMotion();
-  const { org, workflows, personas, departmentMetrics } = useAppStore();
+  const { org, workflows, personas, departmentMetrics, deleteWorkflow, updateWorkflow } = useAppStore();
+  const [showNewWorkflowDialog, setShowNewWorkflowDialog] = useState(false);
+  const [workflowToDelete, setWorkflowToDelete] = useState<WorkflowType | null>(null);
 
   const department = org?.departments.find((d) => d.id === departmentId);
+
+  const handleCreateWorkflow = (name: string, description: string) => {
+    onCreateWorkflow(departmentId, name, description);
+  };
+
+  const handleDeleteWorkflow = () => {
+    if (workflowToDelete) {
+      deleteWorkflow(workflowToDelete.id);
+      toast.success("Workflow deleted", {
+        description: `"${workflowToDelete.name}" has been removed.`,
+      });
+      setWorkflowToDelete(null);
+    }
+  };
+
+  const handleToggleStatus = (workflow: WorkflowType, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newStatus = workflow.status === "active" ? "paused" : "active";
+    updateWorkflow(workflow.id, { status: newStatus });
+    toast.success(
+      newStatus === "active" ? "Workflow activated" : "Workflow paused",
+      { description: `"${workflow.name}" is now ${newStatus}.` }
+    );
+  };
   const config = departmentConfig[departmentId] || departmentConfig["dept-1"];
   const metrics = departmentMetrics.find((m) => m.departmentId === departmentId);
 
@@ -246,6 +286,7 @@ export function WorkflowCategoryList({
           >
             <Button
               size="sm"
+              onClick={() => setShowNewWorkflowDialog(true)}
               className={cn(
                 "gap-2 shadow-sm transition-all duration-300",
                 "hover:shadow-md hover:scale-105"
@@ -373,7 +414,7 @@ export function WorkflowCategoryList({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => handleToggleStatus(workflow, e)}>
                             {workflow.status === "active" ? (
                               <>
                                 <Pause className="mr-2 h-4 w-4" /> Pause
@@ -384,8 +425,17 @@ export function WorkflowCategoryList({
                               </>
                             )}
                           </DropdownMenuItem>
-                          <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                            Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setWorkflowToDelete(workflow);
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -448,6 +498,40 @@ export function WorkflowCategoryList({
           })}
         </motion.div>
       )}
+
+      {/* New Workflow Dialog */}
+      <NewWorkflowDialog
+        open={showNewWorkflowDialog}
+        onOpenChange={setShowNewWorkflowDialog}
+        onSubmit={handleCreateWorkflow}
+        departmentName={department?.name}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!workflowToDelete} onOpenChange={(open) => !open && setWorkflowToDelete(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </div>
+              Delete Workflow
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &ldquo;{workflowToDelete?.name}&rdquo;? This action
+              cannot be undone and all workflow data will be permanently removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setWorkflowToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteWorkflow}>
+              Delete Workflow
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

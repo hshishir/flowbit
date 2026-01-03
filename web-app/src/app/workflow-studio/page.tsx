@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Power, Save, ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
@@ -11,8 +12,10 @@ import { StepPalette } from "@/components/workflow-studio/step-palette";
 import { Canvas } from "@/components/workflow-studio/canvas";
 import { PropertiesPanel } from "@/components/workflow-studio/properties-panel";
 import { TestRunner } from "@/components/workflow-studio/test-runner";
+import { NewWorkflowDialog } from "@/components/workflow-studio/new-workflow-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAppStore } from "@/stores/app-store";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { toast } from "sonner";
@@ -20,15 +23,52 @@ import { cn } from "@/lib/utils";
 
 type ViewState = "categories" | "workflows" | "editor";
 
+function WorkflowStudioLoading() {
+  return (
+    <AppShell title="Workflow Studio">
+      <div className="flex h-full items-center justify-center">
+        <Skeleton className="h-96 w-full max-w-4xl" />
+      </div>
+    </AppShell>
+  );
+}
+
 export default function WorkflowStudioPage() {
+  return (
+    <Suspense fallback={<WorkflowStudioLoading />}>
+      <WorkflowStudioContent />
+    </Suspense>
+  );
+}
+
+function WorkflowStudioContent() {
   const reducedMotion = useReducedMotion();
-  const { workflows, selectedWorkflowId, setSelectedWorkflowId, selectedNodeId, org } = useAppStore();
+  const searchParams = useSearchParams();
+  const { workflows, selectedWorkflowId, setSelectedWorkflowId, selectedNodeId, org, createWorkflow } = useAppStore();
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("categories");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [showNewWorkflowDialog, setShowNewWorkflowDialog] = useState(false);
+  const [pendingPersonaName, setPendingPersonaName] = useState<string | null>(null);
 
   const selectedWorkflow = workflows.find((w) => w.id === selectedWorkflowId);
   const selectedDepartment = org?.departments.find((d) => d.id === selectedCategoryId);
+
+  // Handle incoming navigation from Blueprint page
+  useEffect(() => {
+    const departmentId = searchParams.get("departmentId");
+    const personaName = searchParams.get("personaName");
+
+    if (departmentId && org?.departments.some((d) => d.id === departmentId)) {
+      setSelectedCategoryId(departmentId);
+      setViewState("workflows");
+      setPendingPersonaName(personaName);
+      // Show dialog after a brief delay to allow view transition
+      setTimeout(() => {
+        setShowNewWorkflowDialog(true);
+      }, 300);
+    }
+  }, [searchParams, org]);
 
   const handleSelectCategory = (departmentId: string) => {
     setSelectedCategoryId(departmentId);
@@ -48,6 +88,28 @@ export default function WorkflowStudioPage() {
   const handleBackToWorkflows = () => {
     setSelectedWorkflowId(null);
     setViewState("workflows");
+  };
+
+  const handleCreateWorkflow = (departmentId: string, name: string, description: string) => {
+    const department = org?.departments.find((d) => d.id === departmentId);
+    createWorkflow(
+      name,
+      description || "No description provided",
+      departmentId
+    );
+    toast.success("Workflow created", {
+      description: `"${name}" created in ${department?.name || "department"}`,
+    });
+    setPendingPersonaName(null);
+    setViewState("editor");
+  };
+
+  // Handler for dialog opened from Blueprint navigation
+  const handleDialogCreateWorkflow = (name: string, description: string) => {
+    if (selectedCategoryId) {
+      handleCreateWorkflow(selectedCategoryId, name, description);
+      setShowNewWorkflowDialog(false);
+    }
   };
 
   const handleSave = () => {
@@ -159,6 +221,7 @@ export default function WorkflowStudioPage() {
                 departmentId={selectedCategoryId}
                 onBack={handleBackToCategories}
                 onSelectWorkflow={handleSelectWorkflow}
+                onCreateWorkflow={handleCreateWorkflow}
               />
             </motion.div>
           )}
@@ -213,6 +276,18 @@ export default function WorkflowStudioPage() {
           workflowName={selectedWorkflow.name}
         />
       )}
+
+      {/* New Workflow Dialog - triggered from Blueprint navigation */}
+      <NewWorkflowDialog
+        open={showNewWorkflowDialog}
+        onOpenChange={(open) => {
+          setShowNewWorkflowDialog(open);
+          if (!open) setPendingPersonaName(null);
+        }}
+        onSubmit={handleDialogCreateWorkflow}
+        departmentName={selectedDepartment?.name}
+        defaultName={pendingPersonaName ? `Workflow for ${pendingPersonaName}` : undefined}
+      />
     </AppShell>
   );
 }

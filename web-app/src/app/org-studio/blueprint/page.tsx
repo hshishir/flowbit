@@ -60,7 +60,14 @@ export default function BlueprintPage() {
   };
 
   const handleImplement = () => {
-    router.push("/workflow-studio");
+    const params = new URLSearchParams();
+    if (persona?.departmentId) {
+      params.set("departmentId", persona.departmentId);
+    }
+    if (currentBlueprint?.personaName) {
+      params.set("personaName", currentBlueprint.personaName);
+    }
+    router.push(`/workflow-studio?${params.toString()}`);
   };
 
   const kpis = currentBlueprint
