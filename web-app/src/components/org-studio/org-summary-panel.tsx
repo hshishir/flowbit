@@ -22,33 +22,6 @@ export function OrgSummaryPanel() {
       variants={reducedMotion ? {} : slideInRight}
       className="sticky top-0 w-80 shrink-0 space-y-4"
     >
-      {/* Org Info Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">
-            Organization
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <p className="text-sm text-muted-foreground">Name</p>
-            <p className="font-medium">{org?.name || "Not set"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Industry</p>
-            <p className="font-medium">{org?.industry || "Not set"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Size</p>
-            <p className="font-medium">{org?.size || "Not set"} employees</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Departments</p>
-            <p className="font-medium">{org?.departments.length || 0}</p>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Metrics Card */}
       <Card>
         <CardHeader className="pb-3">

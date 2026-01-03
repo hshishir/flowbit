@@ -46,22 +46,9 @@ export function PropertiesPanel() {
   const workflow = workflows.find((w) => w.id === selectedWorkflowId);
   const node = workflow?.nodes.find((n) => n.id === selectedNodeId);
 
+  // Return null if no node is selected (panel won't be rendered anyway, but safety check)
   if (!node) {
-    return (
-      <div className="flex h-full w-80 flex-col border-l bg-muted/30">
-        <div className="flex h-14 items-center justify-between border-b px-4">
-          <div className="flex items-center gap-2">
-            <Settings className="h-4 w-4 text-muted-foreground" />
-            <h3 className="font-semibold">Properties</h3>
-          </div>
-        </div>
-        <div className="flex flex-1 items-center justify-center p-4">
-          <p className="text-center text-sm text-muted-foreground">
-            Select a node to view and edit its properties
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const Icon = nodeIcons[node.type];
