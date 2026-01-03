@@ -10,6 +10,7 @@ import {
   OrgMetrics,
   DepartmentMetrics,
   GovernanceEvent,
+  Task,
 } from "@/mocks/types";
 import {
   mockOrg,
@@ -31,6 +32,11 @@ interface AppState {
   selectedPersonaId: string | null;
   setSelectedPersonaId: (id: string | null) => void;
   getPersonaById: (id: string) => Persona | undefined;
+
+  // Task CRUD
+  addTask: (personaId: string, task: Omit<Task, "id">) => Task;
+  updateTask: (personaId: string, taskId: string, updates: Partial<Task>) => void;
+  deleteTask: (personaId: string, taskId: string) => void;
 
   // Blueprints
   blueprints: Blueprint[];
@@ -98,6 +104,68 @@ export const useAppStore = create<AppState>()(
       },
 
       getPersonaById: (id) => get().personas.find((p) => p.id === id),
+
+      addTask: (personaId, taskData) => {
+        const newTask: Task = {
+          ...taskData,
+          id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+        };
+
+        set((state) => ({
+          personas: state.personas.map((p) =>
+            p.id === personaId
+              ? {
+                  ...p,
+                  tasks: [...p.tasks, newTask],
+                  taskCount: p.taskCount + 1,
+                  estimatedHoursPerWeek: p.estimatedHoursPerWeek + newTask.timePerWeek,
+                }
+              : p
+          ),
+        }));
+
+        return newTask;
+      },
+
+      updateTask: (personaId, taskId, updates) => {
+        set((state) => ({
+          personas: state.personas.map((p) => {
+            if (p.id !== personaId) return p;
+
+            const oldTask = p.tasks.find((t) => t.id === taskId);
+            const updatedTasks = p.tasks.map((t) =>
+              t.id === taskId ? { ...t, ...updates } : t
+            );
+            const hoursDiff = updates.timePerWeek !== undefined && oldTask
+              ? updates.timePerWeek - oldTask.timePerWeek
+              : 0;
+
+            return {
+              ...p,
+              tasks: updatedTasks,
+              estimatedHoursPerWeek: p.estimatedHoursPerWeek + hoursDiff,
+            };
+          }),
+        }));
+      },
+
+      deleteTask: (personaId, taskId) => {
+        set((state) => ({
+          personas: state.personas.map((p) => {
+            if (p.id !== personaId) return p;
+
+            const taskToDelete = p.tasks.find((t) => t.id === taskId);
+            const hoursToRemove = taskToDelete?.timePerWeek || 0;
+
+            return {
+              ...p,
+              tasks: p.tasks.filter((t) => t.id !== taskId),
+              taskCount: p.taskCount - 1,
+              estimatedHoursPerWeek: p.estimatedHoursPerWeek - hoursToRemove,
+            };
+          }),
+        }));
+      },
 
       generateBlueprint: async (personaId) => {
         set({ isGeneratingBlueprint: true });

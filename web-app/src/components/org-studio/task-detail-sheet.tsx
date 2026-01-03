@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Clock,
@@ -8,7 +9,8 @@ import {
   Bot,
   User,
   TrendingUp,
-  X,
+  Trash2,
+  Pencil,
 } from "lucide-react";
 import {
   Sheet,
@@ -17,6 +19,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -28,16 +38,32 @@ interface TaskDetailSheetProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
 }
 
 export function TaskDetailSheet({
   task,
   open,
   onOpenChange,
+  onEdit,
+  onDelete,
 }: TaskDetailSheetProps) {
   const reducedMotion = useReducedMotion();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!task) return null;
+
+  const handleEdit = () => {
+    onEdit?.(task);
+    onOpenChange(false);
+  };
+
+  const handleDelete = () => {
+    onDelete?.(task);
+    setShowDeleteConfirm(false);
+    onOpenChange(false);
+  };
 
   const getTypeBadgeVariant = (type: Task["type"]) => {
     switch (type) {
@@ -203,13 +229,59 @@ export function TaskDetailSheet({
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleEdit}
+              disabled={!onEdit}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
               Edit Task
             </Button>
             <Button className="flex-1">Include in Blueprint</Button>
           </div>
+
+          {/* Delete Action */}
+          <Button
+            variant="ghost"
+            className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={!onDelete}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Task
+          </Button>
         </div>
       </SheetContent>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </div>
+              Delete Task
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &ldquo;{task.name}&rdquo;? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete Task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }
