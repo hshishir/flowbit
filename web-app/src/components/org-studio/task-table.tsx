@@ -9,6 +9,7 @@ import {
   Clock,
   AlertTriangle,
   ArrowUpDown,
+  Plus,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,9 +35,10 @@ import type { Task } from "@/mocks/types";
 interface TaskTableProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  onAddTask?: () => void;
 }
 
-export function TaskTable({ tasks, onTaskClick }: TaskTableProps) {
+export function TaskTable({ tasks, onTaskClick, onAddTask }: TaskTableProps) {
   const reducedMotion = useReducedMotion();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<Task["type"][]>([]);
@@ -185,6 +187,13 @@ export function TaskTable({ tasks, onTaskClick }: TaskTableProps) {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {onAddTask && (
+          <Button onClick={onAddTask} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Task
+          </Button>
+        )}
       </div>
 
       {/* Table */}
