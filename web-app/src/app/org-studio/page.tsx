@@ -6,7 +6,6 @@ import { Plus, Upload, Building2 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageTransition } from "@/components/layout/page-transition";
 import { DepartmentCards } from "@/components/org-studio/department-cards";
-import { OrgSummaryPanel } from "@/components/org-studio/org-summary-panel";
 import { ImportOrgModal } from "@/components/org-studio/import-org-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,10 +38,10 @@ export default function OrgStudioPage() {
           initial="initial"
           animate="enter"
           variants={reducedMotion ? {} : staggerContainer}
-          className="flex gap-6 p-6"
+          className="p-6"
         >
           {/* Main Content */}
-          <div className="flex-1 space-y-6">
+          <div className="space-y-6">
             {/* Org Intake Card */}
             <motion.div variants={reducedMotion ? {} : staggerItem}>
               <Card>
@@ -93,9 +92,6 @@ export default function OrgStudioPage() {
               <DepartmentCards />
             </motion.div>
           </div>
-
-          {/* Sidebar */}
-          <OrgSummaryPanel />
         </motion.div>
       </PageTransition>
 

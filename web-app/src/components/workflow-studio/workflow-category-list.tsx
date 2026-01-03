@@ -10,7 +10,7 @@ import {
   CheckCircle2,
   Activity,
   MoreVertical,
-  Zap,
+  Plus,
   TrendingUp,
   Code2,
   Users,
@@ -217,24 +217,44 @@ export function WorkflowCategoryList({
           All Categories
         </Button>
 
-        <div className="flex items-center gap-4">
-          <div
-            className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-xl text-3xl",
-              "bg-muted/50 ring-1 ring-border/50"
-            )}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div
+              className={cn(
+                "flex h-14 w-14 items-center justify-center rounded-xl text-3xl",
+                "bg-muted/50 ring-1 ring-border/50"
+              )}
+            >
+              {config.emoji}
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">
+                {department?.name || "Department"}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {categoryWorkflows.length} workflow
+                {categoryWorkflows.length !== 1 ? "s" : ""} in this category
+              </p>
+            </div>
+          </div>
+
+          {/* Create Workflow Button */}
+          <motion.div
+            initial={reducedMotion ? {} : { opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, type: "spring" as const, stiffness: 300, damping: 20 }}
           >
-            {config.emoji}
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">
-              {department?.name || "Department"}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {categoryWorkflows.length} workflow
-              {categoryWorkflows.length !== 1 ? "s" : ""} in this category
-            </p>
-          </div>
+            <Button
+              size="sm"
+              className={cn(
+                "gap-2 shadow-sm transition-all duration-300",
+                "hover:shadow-md hover:scale-105"
+              )}
+            >
+              <Plus className="h-4 w-4" />
+              New Workflow
+            </Button>
+          </motion.div>
         </div>
 
         {/* Quick Stats */}
@@ -284,12 +304,8 @@ export function WorkflowCategoryList({
           </div>
           <p className="mt-4 text-lg font-medium text-foreground">No workflows yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Create your first workflow for this department
+            Click "New Workflow" above to create your first workflow
           </p>
-          <Button className="mt-6" size="sm">
-            <Zap className="mr-2 h-4 w-4" />
-            Create Workflow
-          </Button>
         </motion.div>
       ) : (
         <motion.div

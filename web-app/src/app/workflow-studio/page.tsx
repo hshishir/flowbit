@@ -22,7 +22,7 @@ type ViewState = "categories" | "workflows" | "editor";
 
 export default function WorkflowStudioPage() {
   const reducedMotion = useReducedMotion();
-  const { workflows, selectedWorkflowId, setSelectedWorkflowId, org } = useAppStore();
+  const { workflows, selectedWorkflowId, setSelectedWorkflowId, selectedNodeId, org } = useAppStore();
   const [testRunnerOpen, setTestRunnerOpen] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("categories");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -188,8 +188,19 @@ export default function WorkflowStudioPage() {
                 <Canvas workflow={selectedWorkflow} />
               </motion.div>
 
-              {/* Right Panel - Properties */}
-              <PropertiesPanel />
+              {/* Right Panel - Properties (only shown when a node is selected) */}
+              <AnimatePresence>
+                {selectedNodeId && (
+                  <motion.div
+                    initial={reducedMotion ? {} : { x: 320, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={reducedMotion ? {} : { x: 320, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    <PropertiesPanel />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
