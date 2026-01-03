@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Plus, Upload, Building2 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageTransition } from "@/components/layout/page-transition";
-import { PersonasTable } from "@/components/org-studio/personas-table";
+import { DepartmentCards } from "@/components/org-studio/department-cards";
 import { OrgSummaryPanel } from "@/components/org-studio/org-summary-panel";
 import { ImportOrgModal } from "@/components/org-studio/import-org-modal";
 import { Button } from "@/components/ui/button";
@@ -82,12 +82,15 @@ export default function OrgStudioPage() {
               </Card>
             </motion.div>
 
-            {/* Personas Section */}
+            {/* Departments Section */}
             <motion.div variants={reducedMotion ? {} : staggerItem}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Personas</h2>
+                <h2 className="text-lg font-semibold">Departments</h2>
+                <p className="text-sm text-muted-foreground">
+                  Click a department to view personas
+                </p>
               </div>
-              <PersonasTable />
+              <DepartmentCards />
             </motion.div>
           </div>
 
