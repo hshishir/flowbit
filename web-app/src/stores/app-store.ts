@@ -54,6 +54,9 @@ interface AppState {
   setSelectedWorkflowId: (id: string | null) => void;
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
+  createWorkflow: (name: string, description: string, departmentId?: string) => Workflow;
+  updateWorkflow: (workflowId: string, updates: Partial<Workflow>) => void;
+  deleteWorkflow: (workflowId: string) => void;
 
   // Metrics
   orgMetrics: OrgMetrics;
@@ -237,6 +240,63 @@ export const useAppStore = create<AppState>()(
       setSelectedWorkflowId: (id) => set({ selectedWorkflowId: id, selectedNodeId: null }),
 
       setSelectedNodeId: (id) => set({ selectedNodeId: id }),
+
+      createWorkflow: (name, description, departmentId) => {
+        const now = new Date().toISOString();
+        const workflowId = `workflow-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+
+        // Find first persona in department to create a blueprint link
+        const persona = departmentId
+          ? get().personas.find((p) => p.departmentId === departmentId)
+          : null;
+
+        const newWorkflow: Workflow = {
+          id: workflowId,
+          name,
+          description,
+          status: "draft",
+          blueprintId: persona ? `blueprint-${persona.id}` : undefined,
+          nodes: [
+            {
+              id: `node-${Date.now()}-1`,
+              type: "trigger",
+              label: "Start",
+              config: { source: "Manual" },
+              position: { x: 100, y: 200 },
+              connections: [],
+            },
+          ],
+          createdAt: now,
+          updatedAt: now,
+          runCount: 0,
+          successRate: 0,
+        };
+
+        set((state) => ({
+          workflows: [...state.workflows, newWorkflow],
+          selectedWorkflowId: newWorkflow.id,
+        }));
+
+        return newWorkflow;
+      },
+
+      updateWorkflow: (workflowId, updates) => {
+        set((state) => ({
+          workflows: state.workflows.map((w) =>
+            w.id === workflowId
+              ? { ...w, ...updates, updatedAt: new Date().toISOString() }
+              : w
+          ),
+        }));
+      },
+
+      deleteWorkflow: (workflowId) => {
+        set((state) => ({
+          workflows: state.workflows.filter((w) => w.id !== workflowId),
+          selectedWorkflowId:
+            state.selectedWorkflowId === workflowId ? null : state.selectedWorkflowId,
+        }));
+      },
 
       setReducedMotion: (value) => set({ reducedMotion: value }),
 
